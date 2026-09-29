@@ -28,6 +28,28 @@
 }
 body { margin:0; font-family:'Hind','Noto Sans Devanagari',system-ui,sans-serif; background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; }
 button,select,input { font:inherit; }
+
+/* ---- Mitra voice orb: four visible states (never colour-only: each has a
+   distinct ring style, and the panel also prints the state name) ---- */
+.orb {
+  width: 88px; height: 88px; border-radius: 9999px;
+  display:flex; align-items:center; justify-content:center;
+  border: 3px solid #F2B33D; background:#2A3168;
+  box-shadow: 0 8px 24px rgba(42,49,104,.35);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.orb:active { transform: scale(.95); }
+.orb.ring-idle { animation: orb-breathe 3.2s ease-in-out infinite; }
+.orb.ring-listening { animation: orb-pulse .9s ease-in-out infinite; box-shadow: 0 0 0 6px rgba(90,154,236,.35), 0 8px 24px rgba(42,49,104,.35); border-color:#5a9aec; }
+.orb.ring-thinking { animation: orb-spin 1.6s linear infinite; border-color:#c17ae8; }
+.orb.ring-speaking { animation: orb-pulse .55s ease-in-out infinite; box-shadow: 0 0 0 8px rgba(122,232,138,.35), 0 8px 24px rgba(42,49,104,.35); border-color:#7ae88a; }
+@keyframes orb-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes orb-pulse   { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes orb-spin    { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(180deg) scale(1.08); } 100% { transform: rotate(360deg) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .orb, .orb.ring-idle, .orb.ring-listening, .orb.ring-thinking, .orb.ring-speaking { animation: none !important; }
+}
 button { cursor:pointer; }
 button:disabled { cursor:not-allowed; }
 button,a,select,input { -webkit-tap-highlight-color:transparent; }

@@ -43,8 +43,10 @@ export function computeDayNight(timeOfDay: number): DayNightState {
 
   const fogColor = skyColor.clone();
   const sunIntensity = Math.max(0, sunHeight) * 1.6;
-  const moonIntensity = isNight ? 0.25 : 0;
-  const ambientIntensity = 0.25 + dayFactor * 0.55;
+  // Night must stay navigable: moonlight + a raised ambient floor so the
+  // village, lanterns and avatars remain readable after dark.
+  const moonIntensity = isNight ? 0.55 : 0;
+  const ambientIntensity = isNight ? 0.55 : 0.45 + dayFactor * 0.45;
 
   return {
     timeOfDay,

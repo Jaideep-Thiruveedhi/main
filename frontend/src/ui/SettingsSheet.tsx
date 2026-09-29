@@ -17,6 +17,8 @@ export const SettingsSheet: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const setTextSize = useWorldStore((s) => s.setTextSize);
   const simpleMode = useWorldStore((s) => s.simpleMode);
   const setSimpleMode = useWorldStore((s) => s.setSimpleMode);
+  const lockedToDay = useWorldStore((s) => s.lockedToDay);
+  const setLockedToDay = useWorldStore((s) => s.setLockedToDay);
 
   return (
     <div className="w-full max-w-sm mx-4">
@@ -64,6 +66,7 @@ export const SettingsSheet: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
           {/* Toggles */}
           <div className="space-y-2">
+            <Toggle label={language === 'hi' ? 'दिन का समय तय रखें' : 'Lock to daytime'} value={lockedToDay} onChange={setLockedToDay} />
             <Toggle label={t(language, 'hud.reduceMotion')} value={reduceMotion} onChange={setReduceMotion} />
             <Toggle label={t(language, 'hud.highContrast')} value={highContrast} onChange={setHighContrast} />
             <Toggle label={t(language, 'hud.captions')} value={captionsEnabled} onChange={setCaptionsEnabled} />

@@ -64,7 +64,7 @@ export function Sky() {
 
     if (sunRef.current) {
       sunRef.current.position.copy(dn.sunPosition);
-      sunRef.current.intensity = dn.sunIntensity * 1.5;
+      sunRef.current.intensity = dn.sunIntensity * 1.5 + dn.moonIntensity;
     }
     if (hemiRef.current) {
       hemiRef.current.intensity = dn.ambientIntensity;
@@ -125,7 +125,7 @@ export function Sky() {
       <directionalLight
         ref={sunRef}
         position={dn.sunPosition.toArray()}
-        intensity={dn.sunIntensity * 1.5}
+        intensity={dn.sunIntensity * 1.5 + dn.moonIntensity}
         castShadow={q.shadows}
         shadow-mapSize-width={q.shadows ? 1024 : 0}
         shadow-mapSize-height={q.shadows ? 1024 : 0}
@@ -134,15 +134,15 @@ export function Sky() {
         shadow-camera-top={60}
         shadow-camera-bottom={-60}
         shadow-camera-far={200}
-        color={dn.isNight ? '#8899cc' : '#fff4e0'}
+        color={dn.isNight ? '#aabbdd' : '#fff4e0'}
       />
       <hemisphereLight
         ref={hemiRef}
         intensity={dn.ambientIntensity}
-        color={dn.isNight ? '#334466' : '#87ceeb'}
-        groundColor={dn.isNight ? '#1a1a2e' : '#8a5a33'}
+        color={dn.isNight ? '#4a5a88' : '#87ceeb'}
+        groundColor={dn.isNight ? '#2a2438' : '#8a5a33'}
       />
-      <ambientLight intensity={dn.isNight ? 0.15 : 0.25} />
+      <ambientLight intensity={dn.isNight ? 0.45 : 0.25} color={dn.isNight ? '#8899cc' : '#ffffff'} />
 
       {/* Sun */}
       <mesh ref={sunMeshRef} position={dn.sunPosition.toArray()}>

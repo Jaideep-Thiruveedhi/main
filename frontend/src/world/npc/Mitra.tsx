@@ -8,6 +8,7 @@ import { useWorldStore } from '../state/useWorldStore';
 export function Mitra() {
   const ref = useRef<THREE.Group>(null);
   const glowRef = useRef<THREE.Mesh>(null);
+  const lampRef = useRef<THREE.PointLight>(null);
   const playerPosition = useWorldStore((s) => s.playerPosition);
   const mitraState = useWorldStore((s) => s.mitraState);
   const reduceMotion = useWorldStore((s) => s.reduceMotion);
@@ -19,22 +20,30 @@ export function Mitra() {
     speaking: '#7ae88a',
   };
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     if (!ref.current) return;
     const t = clock.elapsedTime;
-    // Follow player at an offset
-    const targetX = playerPosition[0] + 2;
-    const targetZ = playerPosition[2] + 2;
-    const targetY = playerPosition[1] + 2.5 + Math.sin(t * 2) * 0.2;
+    // Follow the player, orbiting slowly so it never hides behind them.
+    const orbit = t * 0.6;
+    const radius = 2.2;
+    const targetX = playerPosition[0] + Math.cos(orbit) * radius;
+    const targetZ = playerPosition[2] + Math.sin(orbit) * radius;
+    const targetY = playerPosition[1] + 1.9 + Math.sin(t * 2) * 0.18;
     if (reduceMotion) {
       ref.current.position.set(targetX, targetY, targetZ);
     } else {
-      ref.current.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.03);
+      ref.current.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.05);
     }
+    // Always face the player/camera.
+    ref.current.lookAt(camera.position.x, ref.current.position.y, camera.position.z);
     // Glow pulse
     if (glowRef.current) {
       const scale = 1 + Math.sin(t * 3) * 0.15;
       glowRef.current.scale.setScalar(scale);
+    }
+    // Keep the companion readable at night: a warm light that follows you.
+    if (lampRef.current) {
+      lampRef.current.intensity = 2.2 + Math.sin(t * 3) * 0.6;
     }
   });
 
@@ -44,16 +53,20 @@ export function Mitra() {
     <group ref={ref}>
       {/* Lantern body */}
       <mesh castShadow>
-        <boxGeometry args={[0.4, 0.5, 0.4]} />
-        <meshLambertMaterial color={color} emissive={color} emissiveIntensity={0.5} />
+        <boxGeometry args={[0.45, 0.55, 0.45]} />
+        <meshBasicMaterial color={color} />
       </mesh>
-      {/* Glow */}
+      {/* Diya flame */}
+      <mesh position={[0, 0.42, 0]}>
+        <octahedronGeometry args={[0.16, 0]} />
+        <meshBasicMaterial color="#fff3c4" />
+      </mesh>
+      {/* Halo so Mitra is always findable, day or night */}
       <mesh ref={glowRef}>
-        <sphereGeometry args={[0.6, 12, 12]} />
-        <meshBasicMaterial color={color} transparent opacity={0.25} />
+        <sphereGeometry args={[0.75, 14, 14]} />
+        <meshBasicMaterial color={color} transparent opacity={0.28} depthWrite={false} />
       </mesh>
-      {/* Point light */}
-      <pointLight color={color} intensity={2} distance={8} />
+      <pointLight ref={lampRef} color={color} intensity={2.2} distance={14} />
     </group>
   );
 }

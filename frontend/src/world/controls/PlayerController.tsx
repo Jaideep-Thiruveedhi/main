@@ -224,6 +224,8 @@ export function PlayerController() {
         <boxGeometry args={[0.5, 0.5, 0.5]} />
         <meshLambertMaterial color="#e8b88a" />
       </mesh>
+      {/* Soft light so the player stays visible after dark */}
+      <pointLight position={[0, 1.6, 0]} color="#ffd9a0" intensity={1.4} distance={12} />
     </group>
   );
 }

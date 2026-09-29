@@ -1,18 +1,202 @@
 import React, { useState } from 'react';
-import { useWorldStore } from '../world/state/useWorldStore';
+import { useWorldStore, PLACES } from '../world/state/useWorldStore';
 import { t } from '../i18n';
 import { MatchCard } from './MatchCard';
 import { adaptRecommendations, adaptJobs, adaptFinancialAid, adaptCareers, adaptMentors, adaptDistrictCells } from '../world/adapters';
 import { api } from '../lib/api';
+import { voiceFAQData } from '../data/mockData';
 
 // In-world panel styled like a Minecraft GUI / wooden sign / written book.
 
 type VerifyState = 'idle' | 'building' | 'done' | 'failed';
 
+const QUICK_ASKS = [
+  { id: 'stipend', hi: 'वजीफा कितना मिलता है?', en: 'How much stipend do I get?' },
+  { id: 'travel', hi: 'यात्रा का खर्चा कौन देगा?', en: 'Who pays my travel?' },
+  { id: 'parttime', hi: 'क्या पढ़ाई के साथ काम कर सकते हैं?', en: 'Can I work while learning?' },
+  { id: 'certificate', hi: 'सरकारी प्रमाण पत्र मिलेगा?', en: 'Will I get a certificate?' },
+];
+
+/** Mitra — the voice assistant. Four visible states, captions always on. */
+const MitraPanel: React.FC = () => {
+  const language = useWorldStore((s) => s.language);
+  const mitraState = useWorldStore((s) => s.mitraState);
+  const setMitraState = useWorldStore((s) => s.setMitraState);
+  const mitraCaption = useWorldStore((s) => s.mitraCaption);
+  const setMitraCaption = useWorldStore((s) => s.setMitraCaption);
+  const captionsEnabled = useWorldStore((s) => s.captionsEnabled);
+
+  const [answer, setAnswer] = useState('');
+  const [supported] = useState(
+    () => typeof window !== 'undefined' && !!(window as any).webkitSpeechRecognition
+  );
+
+  const speak = (text: string) => {
+    setAnswer(text);
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = language === 'en' ? 'en-IN' : language === 'hi' ? 'hi-IN' : language;
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    }
+  };
+
+  const startMic = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      setMitraState('listening');
+      setMitraCaption(
+        supported
+          ? t(language, 'mitra.listening')
+          : language === 'en'
+            ? 'Speech input is not available in this browser. Tap a question below instead.'
+            : 'इस ब्राउज़र में बोलकर पूछना उपलब्ध नहीं है। नीचे से प्रश्न चुनें।'
+      );
+      setTimeout(() => setMitraState('idle'), 2200);
+      return;
+    }
+    const rec = new SR();
+    rec.lang = language === 'en' ? 'en-IN' : language === 'hi' ? 'hi-IN' : language;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    setMitraState('listening');
+    setMitraCaption(t(language, 'mitra.listening'));
+    rec.onresult = (e: any) => {
+      const said = e.results?.[0]?.[0]?.transcript;
+      setMitraState('thinking');
+      setTimeout(() => {
+        setMitraState('speaking');
+        setAnswer(said || '');
+        setMitraCaption(said || t(language, 'mitra.idle'));
+        setTimeout(() => setMitraState('idle'), 2600);
+      }, 900);
+    };
+    rec.onerror = () => {
+      setMitraState('idle');
+      setMitraCaption(t(language, 'mitra.idle'));
+    };
+    rec.onend = () => { if (mitraState === 'listening') setMitraState('idle'); };
+    try { rec.start(); } catch { setMitraState('idle'); }
+  };
+
+  const ring =
+    mitraState === 'listening' ? 'ring-listening'
+      : mitraState === 'thinking' ? 'ring-thinking'
+      : mitraState === 'speaking' ? 'ring-speaking'
+      : 'ring-idle';
+
+  return (
+    <div className="space-y-4">
+      {/* Voice orb with 4 visible states */}
+      <div className="flex flex-col items-center gap-2 py-2">
+        <button
+          onClick={startMic}
+          aria-label={t(language, 'hud.mic')}
+          className={`orb ${ring}`}
+        >
+          <span className="text-4xl">🪔</span>
+        </button>
+        <p className="text-xs font-bold text-slate-600">
+          {mitraState === 'listening' && t(language, 'mitra.listening')}
+          {mitraState === 'thinking' && t(language, 'mitra.thinking')}
+          {mitraState === 'speaking' && t(language, 'mitra.speaking')}
+          {mitraState === 'idle' && t(language, 'mitra.idle')}
+        </p>
+      </div>
+
+      {/* Captions / transcript, always visible */}
+      {(mitraCaption || answer) && (
+        <p className="bg-slate-900 text-white rounded-xl px-3 py-2 text-sm text-center" role="status" aria-live="polite">
+          {answer || mitraCaption}
+        </p>
+      )}
+
+      {/* Quick asks - no typing required */}
+      <div>
+        <p className="text-xs font-black text-slate-500 uppercase mb-2">
+          {language === 'hi' ? 'प्रश्न चुनें' : 'Tap a question'}
+        </p>
+        <div className="space-y-2">
+          {QUICK_ASKS.map((q) => (
+            <button
+              key={q.id}
+              onClick={() => {
+                const faq = voiceFAQData.find((f) => f.id === `faq-${QUICK_ASKS.indexOf(q) + 1}`);
+                speak(language === 'en' ? (faq?.answer ?? q.en) : (faq?.answerHi ?? q.hi));
+                setMitraCaption(language === 'en' ? (faq?.answer ?? q.en) : (faq?.answerHi ?? q.hi));
+              }}
+              className="w-full text-left bg-white border-2 border-slate-200 hover:border-[#F2B33D] rounded-xl px-3 py-2.5 text-sm font-bold text-slate-800 transition-colors"
+            >
+              {language === 'en' ? q.en : q.hi}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Replay / skip - always available */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => answer && speak(answer)}
+          disabled={!answer}
+          className="flex-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold text-sm py-2.5 rounded-xl"
+        >
+          🔁 {t(language, 'hud.replay')}
+        </button>
+        <button
+          onClick={() => { setAnswer(''); setMitraCaption(''); setMitraState('idle'); }}
+          className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-2.5 rounded-xl"
+        >
+          ⏭ {t(language, 'hud.skip')}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/** Map & compass - fast travel to every place, in the selected language. */
+const MapPanel: React.FC<{ onGo: (place: string) => void }> = ({ onGo }) => {
+  const language = useWorldStore((s) => s.language);
+  const role = useWorldStore((s) => s.role);
+  const playerPosition = useWorldStore((s) => s.playerPosition);
+  const nearbyPlace = useWorldStore((s) => s.nearbyPlace);
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-slate-600">{t(language, 'hud.goThere')}</p>
+      {PLACES.map((p) => {
+        const locked = p.staffOnly && role === 'beneficiary';
+        const d = Math.hypot(p.position[0] - playerPosition[0], p.position[2] - playerPosition[2]);
+        const here = nearbyPlace === p.id;
+        return (
+          <button
+            key={p.id}
+            disabled={locked}
+            onClick={() => onGo(p.id)}
+            className={`w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors ${
+              locked ? 'bg-slate-50 opacity-50'
+                : here ? 'bg-amber-50 border-2 border-[#F2B33D]'
+                : 'bg-white border-2 border-slate-200 hover:border-[#F2B33D]'
+            }`}
+          >
+            <span className="text-2xl">{locked ? '🔒' : '📍'}</span>
+            <span className="flex-1">
+              <span className="block font-bold text-slate-900">{t(language, `places.${p.id}`)}</span>
+              {locked && <span className="text-xs text-slate-500">{t(language, 'hud.locked')}</span>}
+            </span>
+            <span className="text-xs font-bold text-slate-400">{d.toFixed(0)}m</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 export const PlacePanel: React.FC<{ panelId: string; onClose: () => void }> = ({ panelId, onClose }) => {
   const language = useWorldStore((s) => s.language);
   const role = useWorldStore((s) => s.role);
   const setMitraCaption = useWorldStore((s) => s.setMitraCaption);
+  const setActivePanel = useWorldStore((s) => s.setActivePanel);
   // Centres flipped to Verified by this officer during this session.
   const [verifiedIds, setVerifiedIds] = useState<string[]>([]);
   const [verifyState, setVerifyState] = useState<Record<string, VerifyState>>({});
@@ -192,6 +376,18 @@ export const PlacePanel: React.FC<{ panelId: string; onClose: () => void }> = ({
               <p className="text-xs text-slate-500 mt-1">Review and correct beneficiary profiles before matching.</p>
             </div>
           </div>
+        );
+      case 'assistant':
+        return <MitraPanel />;
+      case 'map':
+        return (
+          <MapPanel
+            onGo={(p) => {
+              const panelId = p === 'fieldWorker' ? 'worker' : p === 'districtPlanner' ? 'planner' : p;
+              setActivePanel(panelId as any);
+              onClose();
+            }}
+          />
         );
       case 'home':
         return (
