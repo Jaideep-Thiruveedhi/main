@@ -251,9 +251,14 @@ export function generateWorld(): Chunk[] {
   for (let x = WORLD_CHUNK_MIN * CHUNK_SIZE; x < (WORLD_CHUNK_MAX + 1) * CHUNK_SIZE; x++) {
     for (let z = WORLD_CHUNK_MIN * CHUNK_SIZE; z < (WORLD_CHUNK_MAX + 1) * CHUNK_SIZE; z++) {
       const h = terrainHeight(x, z);
+      const cx = Math.floor(x / CHUNK_SIZE);
+      const cz = Math.floor(z / CHUNK_SIZE);
       const chunk = get(x, z)!;
-      const lx = x % CHUNK_SIZE;
-      const lz = z % CHUNK_SIZE;
+      // NOTE: must be x - cx*CHUNK_SIZE, not x % CHUNK_SIZE. JS % keeps the
+      // sign of the dividend, so a negative world x would produce a negative
+      // local index and chunk.set() would silently drop the block.
+      const lx = x - cx * CHUNK_SIZE;
+      const lz = z - cz * CHUNK_SIZE;
       for (let y = 0; y <= h; y++) {
         let id = B.STONE;
         if (y === h) id = B.GRASS;
@@ -298,7 +303,9 @@ export function generateWorld(): Chunk[] {
     const x = homePos[0] + 8 + i;
     const z = homePos[2] - 4 + Math.floor(i * 0.3);
     const chunk = get(x, z)!;
-    chunk.set(x % CHUNK_SIZE, groundAt(x, z), z % CHUNK_SIZE, B.PATH);
+    const cx = Math.floor(x / CHUNK_SIZE);
+    const cz = Math.floor(z / CHUNK_SIZE);
+    chunk.set(x - cx * CHUNK_SIZE, groundAt(x, z), z - cz * CHUNK_SIZE, B.PATH);
     if (i % 3 === 0) buildLanternPost(chunks, x + 1, z, groundAt(x + 1, z));
   }
 

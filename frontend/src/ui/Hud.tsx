@@ -7,6 +7,7 @@ import { Subtitles } from './Subtitles';
 import { JourneyBar } from './JourneyBar';
 import { SettingsSheet } from './SettingsSheet';
 import { PlacePanel } from './PlacePanel';
+import { TouchControls, ProximityPrompt } from './TouchControls';
 
 // Game-style HUD overlay. No sidebar, no nav bar - just game UI.
 
@@ -90,22 +91,24 @@ export const Hud: React.FC = () => {
         <Hotbar />
       </div>
 
+      {/* Mobile controls + desktop proximity prompt */}
+      <TouchControls />
+      <ProximityPrompt />
+
       {/* Subtitles */}
       <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-full max-w-lg px-4">
         <Subtitles />
       </div>
 
-      {/* Active panel */}
-      {activePanel && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto bg-black/20">
-          <PlacePanel panelId={activePanel} onClose={() => setActivePanel(null)} />
-        </div>
-      )}
-
-      {/* Settings */}
+      {/* Active panel. 'settings' has its own sheet; 'map' reuses the compass. */}
       {activePanel === 'settings' && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-auto bg-black/20">
           <SettingsSheet onClose={() => setActivePanel(null)} />
+        </div>
+      )}
+      {activePanel && activePanel !== 'settings' && activePanel !== 'map' && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto bg-black/20">
+          <PlacePanel panelId={activePanel} onClose={() => setActivePanel(null)} />
         </div>
       )}
     </div>

@@ -7,6 +7,8 @@ import { Water } from './Water';
 import { PlayerController } from '../controls/PlayerController';
 import { CameraRig } from '../controls/CameraRig';
 import { Places } from '../places/Places';
+import { SkillCentres } from '../places/SkillCentres';
+import { DistrictTower } from '../places/DistrictTower';
 import { Npcs } from '../npc/Npcs';
 import { Mitra } from '../npc/Mitra';
 import { useWorldStore } from '../state/useWorldStore';
@@ -51,6 +53,8 @@ export function WorldScene() {
         <Sky />
         <Terrain />
         <Water />
+        <SkillCentres />
+        <DistrictTower />
         <Places />
         <Npcs />
         <Mitra />

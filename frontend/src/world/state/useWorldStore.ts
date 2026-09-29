@@ -61,6 +61,10 @@ interface WorldState {
   journeyStage: number; // 0..5
   playerPosition: [number, number, number];
   firstVisitDone: boolean;
+  autoWalkTarget: [number, number, number] | null;
+  nearbyPlace: PlaceId | null;
+  /** Consumed by PlayerController to snap the avatar (fast travel / debug). */
+  teleportRequest: { x: number; y: number; z: number; epoch: number } | null;
 
   setLanguage: (l: Language) => void;
   setRole: (r: Role) => void;
@@ -83,6 +87,10 @@ interface WorldState {
   setJourneyStage: (s: number) => void;
   setPlayerPosition: (p: [number, number, number]) => void;
   setFirstVisitDone: (v: boolean) => void;
+  setAutoWalkTarget: (p: [number, number, number] | null) => void;
+  setNearbyPlace: (p: PlaceId | null) => void;
+  requestTeleport: (x: number, y: number, z: number) => void;
+  clearTeleport: () => void;
 }
 
 export const useWorldStore = create<WorldState>((set) => ({
@@ -106,8 +114,11 @@ export const useWorldStore = create<WorldState>((set) => ({
   offlineMode: false,
   sampleDataBadge: false,
   journeyStage: 0,
-  playerPosition: [-6, 6, 16],
+  playerPosition: [-20, 6, 3],
   firstVisitDone: false,
+  autoWalkTarget: null,
+  nearbyPlace: null,
+  teleportRequest: null,
 
   setLanguage: (language) => set({ language }),
   setRole: (role) => set({ role }),
@@ -130,4 +141,9 @@ export const useWorldStore = create<WorldState>((set) => ({
   setJourneyStage: (journeyStage) => set({ journeyStage }),
   setPlayerPosition: (playerPosition) => set({ playerPosition }),
   setFirstVisitDone: (firstVisitDone) => set({ firstVisitDone }),
+  setAutoWalkTarget: (autoWalkTarget) => set({ autoWalkTarget }),
+  setNearbyPlace: (nearbyPlace) => set({ nearbyPlace }),
+  requestTeleport: (x, y, z) =>
+    set((s) => ({ teleportRequest: { x, y, z, epoch: (s.teleportRequest?.epoch ?? 0) + 1 } })),
+  clearTeleport: () => set({ teleportRequest: null }),
 }));

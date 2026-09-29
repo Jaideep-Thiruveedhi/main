@@ -5,16 +5,25 @@ import { useWorldStore } from '../state/useWorldStore';
 
 // Third-person camera that follows the player, with mouse-look and touch drag.
 
+// QA/debug handle so screenshots and the browser console can aim the camera.
+export const cameraDebug = { yaw: -1.42, pitch: 0.38, distance: 13 };
+
 export function CameraRig() {
   const { camera, gl } = useThree();
   const playerPosition = useWorldStore((s) => s.playerPosition);
   const reduceMotion = useWorldStore((s) => s.reduceMotion);
-  // Start looking from the home courtyard across the village toward the centre.
-  const yaw = useRef(-1.42);
-  const pitch = useRef(0.38);
-  const distance = useRef(13);
+  const yaw = useRef(cameraDebug.yaw);
+  const pitch = useRef(cameraDebug.pitch);
+  const distance = useRef(cameraDebug.distance);
   const isDragging = useRef(false);
   const lastTouch = useRef<{ x: number; y: number } | null>(null);
+
+  // Keep the debug handle in sync with user input.
+  useFrame(() => {
+    cameraDebug.yaw = yaw.current;
+    cameraDebug.pitch = pitch.current;
+    cameraDebug.distance = distance.current;
+  });
 
   useEffect(() => {
     const canvas = gl.domElement;

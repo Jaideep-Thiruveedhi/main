@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useWorldStore } from '../state/useWorldStore';
+import { useWorldStore, PLACES, type PlaceId } from '../state/useWorldStore';
 import { isSolid } from '../engine/blocks';
 import { getWorld, getWorldBlock } from '../engine/world';
 import { CHUNK_HEIGHT } from '../engine/chunks';
@@ -89,6 +89,23 @@ export function PlayerController() {
     const dt = Math.min(delta, 0.05);
     const pos = playerRef.current.position;
 
+    // Fast travel / debug teleport: snap and cancel any auto-walk.
+    const st = useWorldStore.getState();
+    if (st.teleportRequest) {
+      const tr = st.teleportRequest;
+      let y = tr.y;
+      if (!isSolid(getBlockAt(tr.x, tr.y, tr.z))) {
+        for (let probe = CHUNK_HEIGHT - 1; probe >= 0; probe--) {
+          if (isSolid(getBlockAt(tr.x, probe, tr.z))) { y = probe + 1; break; }
+        }
+      }
+      pos.set(tr.x, y, tr.z);
+      velocity.current.set(0, 0, 0);
+      onGround.current = true;
+      st.clearTeleport();
+      st.setAutoWalkTarget(null);
+    }
+
     // Input direction (camera-relative)
     const forward = new THREE.Vector3();
     camera.getWorldDirection(forward);
@@ -105,6 +122,27 @@ export function PlayerController() {
       move.add(forward.clone().multiplyScalar(-joystick.current.y));
       move.add(right.clone().multiplyScalar(joystick.current.x));
     }
+
+    // Auto-walk ("go there"): steer toward the target, or teleport if the
+    // user asked for reduced motion.
+    const state = useWorldStore.getState();
+    const target = state.autoWalkTarget;
+    if (target) {
+      const tdx = target[0] - pos.x;
+      const tdz = target[2] - pos.z;
+      const dist = Math.hypot(tdx, tdz);
+      if (dist < 1.8) {
+        state.setAutoWalkTarget(null);
+      } else if (state.reduceMotion) {
+        pos.x = target[0];
+        pos.z = target[2];
+        state.setAutoWalkTarget(null);
+      } else {
+        move.x += tdx / dist;
+        move.z += tdz / dist;
+      }
+    }
+
     if (move.lengthSq() > 0) move.normalize();
 
     const speed = keys.current['ShiftLeft'] || keys.current['ShiftRight'] ? SPRINT_SPEED : WALK_SPEED;
@@ -142,6 +180,29 @@ export function PlayerController() {
     if (pos.y < -10) {
       pos.set(...SPAWN);
       velocity.current.set(0, 0, 0);
+    }
+
+    // Proximity: which place is the player standing next to?
+    let nearest: PlaceId | null = null;
+    let nearestDist = 6;
+    for (const p of PLACES) {
+      const d = Math.hypot(p.position[0] - pos.x, p.position[2] - pos.z);
+      if (d < nearestDist) { nearestDist = d; nearest = p.id; }
+    }
+    if (nearest !== useWorldStore.getState().nearbyPlace) {
+      useWorldStore.getState().setNearbyPlace(nearest);
+    }
+
+    // 'E' opens the nearby place's panel
+    if ((keys.current['KeyE'] || keys.current['Enter']) && nearest) {
+      keys.current['KeyE'] = false;
+      const s = useWorldStore.getState();
+      s.setCurrentPlace(nearest);
+      s.setActivePanel(
+        (nearest === 'fieldWorker' ? 'worker'
+          : nearest === 'districtPlanner' ? 'planner'
+          : nearest) as any
+      );
     }
 
     // Walk bob

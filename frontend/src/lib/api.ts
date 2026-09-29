@@ -171,12 +171,21 @@ class ApiService {
   private sessionToken: string | null = null;
   private sessionId: string | null = null;
   private officerKey: string | null = null;
+  private workerApiKey: string | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
       this.sessionToken = window.sessionStorage.getItem('jm_session_token');
       this.sessionId = window.sessionStorage.getItem('jm_session_id');
       this.officerKey = window.sessionStorage.getItem('jm_officer_key');
+      this.workerApiKey = window.sessionStorage.getItem('jm_worker_key');
+    }
+  }
+
+  public setWorkerApiKey(key: string) {
+    this.workerApiKey = key;
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('jm_worker_key', key);
     }
   }
 
@@ -468,6 +477,32 @@ class ApiService {
       window.sessionStorage.removeItem('jeevanmitra-journey');
     }
     return data;
+  }
+
+  /**
+   * A4/Claim 1: the ONLY action that can flip an Interest Match to a
+   * Verified Match. Requires the field-worker API key. The backend writes an
+   * audit event and refuses stale/unverified batches.
+   */
+  async verifyOpportunity(
+    opportunityId: string,
+    availableSeats: number = 10,
+    batchStatus: string = 'active',
+    notes: string = 'Verified from the district planner console'
+  ): Promise<{ verified: boolean; opportunity_id: string }> {
+    const res = await fetch(`${API_BASE}/worker/opportunities/${opportunityId}/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Worker-API-Key': this.workerApiKey || '',
+      },
+      body: JSON.stringify({ available_seats: availableSeats, batch_status: batchStatus, notes }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.detail?.message || `Verification failed: ${res.statusText}`);
+    }
+    return res.json();
   }
 
   /**

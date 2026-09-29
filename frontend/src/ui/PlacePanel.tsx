@@ -7,21 +7,30 @@ import { api } from '../lib/api';
 
 // In-world panel styled like a Minecraft GUI / wooden sign / written book.
 
+type VerifyState = 'idle' | 'building' | 'done' | 'failed';
+
 export const PlacePanel: React.FC<{ panelId: string; onClose: () => void }> = ({ panelId, onClose }) => {
   const language = useWorldStore((s) => s.language);
   const role = useWorldStore((s) => s.role);
-  const [verifyState, setVerifyState] = useState<Record<string, 'idle' | 'building' | 'done'>>({});
+  const setMitraCaption = useWorldStore((s) => s.setMitraCaption);
+  // Centres flipped to Verified by this officer during this session.
+  const [verifiedIds, setVerifiedIds] = useState<string[]>([]);
+  const [verifyState, setVerifyState] = useState<Record<string, VerifyState>>({});
 
   const isWorker = role === 'field_worker';
 
+  // Only a field-worker action can flip Interest -> Verified. The card is
+  // hidden until the API confirms success.
   const handleVerify = async (centreId: string) => {
     setVerifyState((s) => ({ ...s, [centreId]: 'building' }));
     try {
-      // In a real deployment this calls the worker verify API
-      await new Promise((r) => setTimeout(r, 1500));
+      await api.verifyOpportunity(centreId);
+      setVerifiedIds((ids) => [...ids, centreId]);
       setVerifyState((s) => ({ ...s, [centreId]: 'done' }));
-    } catch {
-      setVerifyState((s) => ({ ...s, [centreId]: 'idle' }));
+      setMitraCaption(t(language, 'mitra.verifiedDone'));
+    } catch (e: any) {
+      setVerifyState((s) => ({ ...s, [centreId]: 'failed' }));
+      setMitraCaption(t(language, 'mitra.verifyFailed'));
     }
   };
 
@@ -31,21 +40,37 @@ export const PlacePanel: React.FC<{ panelId: string; onClose: () => void }> = ({
         const centres = adaptRecommendations();
         return (
           <div className="space-y-3">
-            {centres.map((c) => (
-              <MatchCard
-                key={c.id}
-                title={c.title}
-                verified={c.verified}
-                distanceKm={c.distanceKm}
-                seats={c.seats}
-                stipend={c.stipend}
-                nsqfLevel={c.nsqfLevel}
-                reason={c.matchReason}
-                isWorker={isWorker}
-                onApply={c.verified ? () => {} : undefined}
-                onVerify={!c.verified && isWorker ? () => handleVerify(c.id) : undefined}
-              />
-            ))}
+            {centres.map((c) => {
+              // The 3D building flips to "built" only once the API confirmed.
+              const verified = c.verified || verifiedIds.includes(c.id);
+              const st = verifyState[c.id];
+              return (
+                <div key={c.id}>
+                  <MatchCard
+                    title={c.title}
+                    verified={verified}
+                    distanceKm={c.distanceKm}
+                    seats={c.seats}
+                    stipend={c.stipend}
+                    nsqfLevel={c.nsqfLevel}
+                    reason={c.matchReason}
+                    isWorker={isWorker}
+                    onApply={verified ? () => {} : undefined}
+                    onVerify={!verified && isWorker ? () => handleVerify(c.id) : undefined}
+                  />
+                  {st === 'building' && (
+                    <p className="mt-1 text-xs font-bold text-amber-700" role="status" aria-live="polite">
+                      🧱 {t(language, 'worker.verifying')}
+                    </p>
+                  )}
+                  {st === 'failed' && (
+                    <p className="mt-1 text-xs font-bold text-rose-700" role="status" aria-live="polite">
+                      {t(language, 'mitra.verifyFailed')}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         );
       }

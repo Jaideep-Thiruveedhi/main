@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { WorldScene } from './scene/WorldScene';
+import { cameraDebug } from './controls/CameraRig';
 import { Hud } from '../ui/Hud';
 import { useWorldStore } from './state/useWorldStore';
 import { t } from '../i18n';
@@ -21,6 +22,24 @@ export const World: React.FC = () => {
     // Auto-detect quality tier
     const tier = detectQualityTier();
     setQuality(tier);
+
+    // Debug/QA helper: lets the browser console (and the automated screenshot
+    // script) jump the player anywhere without walking.
+    if (typeof window !== 'undefined') {
+      (window as any).__jm = {
+        store: useWorldStore,
+        teleport: (x: number, y: number, z: number) => useWorldStore.getState().requestTeleport(x, y, z),
+        look: (yaw: number, pitch?: number, distance?: number) => {
+          cameraDebug.yaw = yaw;
+          if (pitch !== undefined) cameraDebug.pitch = pitch;
+          if (distance !== undefined) cameraDebug.distance = distance;
+        },
+      };
+    }
+    window.addEventListener('jm-teleport', ((e: any) => {
+      const [x, y, z] = e.detail || [];
+      if (typeof x === 'number') useWorldStore.getState().requestTeleport(x, y, z);
+    }) as EventListener);
 
     // Handle deep link ?place=xxx
     const params = new URLSearchParams(window.location.search);
