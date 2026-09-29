@@ -24,6 +24,7 @@ export function PlayerController() {
   const onGround = useRef(false);
   const keys = useRef<Record<string, boolean>>({});
   const joystick = useRef<{ x: number; y: number } | null>(null);
+  const stuckRef = useRef({ lastDist: Infinity, since: 0 });
   const setPlayerPosition = useWorldStore((s) => s.setPlayerPosition);
   const reduceMotion = useWorldStore((s) => s.reduceMotion);
 
@@ -124,22 +125,38 @@ export function PlayerController() {
     }
 
     // Auto-walk ("go there"): steer toward the target, or teleport if the
-    // user asked for reduced motion.
+    // user asked for reduced motion. Gives up if we stop making progress
+    // (e.g. the destination is inside a building) so we never shove into a
+    // wall forever.
     const state = useWorldStore.getState();
     const target = state.autoWalkTarget;
     if (target) {
       const tdx = target[0] - pos.x;
       const tdz = target[2] - pos.z;
       const dist = Math.hypot(tdx, tdz);
-      if (dist < 1.8) {
+      if (dist < 2.2) {
         state.setAutoWalkTarget(null);
+        stuckRef.current = { lastDist: Infinity, since: 0 };
       } else if (state.reduceMotion) {
         pos.x = target[0];
         pos.z = target[2];
         state.setAutoWalkTarget(null);
+        stuckRef.current = { lastDist: Infinity, since: 0 };
       } else {
         move.x += tdx / dist;
         move.z += tdz / dist;
+        // progress watchdog
+        const s = stuckRef.current;
+        if (dist < s.lastDist - 0.05) {
+          s.lastDist = dist;
+          s.since = 0;
+        } else {
+          s.since += dt;
+          if (s.since > 2.5) {
+            state.setAutoWalkTarget(null);
+            stuckRef.current = { lastDist: Infinity, since: 0 };
+          }
+        }
       }
     }
 
@@ -184,7 +201,7 @@ export function PlayerController() {
 
     // Proximity: which place is the player standing next to?
     let nearest: PlaceId | null = null;
-    let nearestDist = 6;
+    let nearestDist = 9;
     for (const p of PLACES) {
       const d = Math.hypot(p.position[0] - pos.x, p.position[2] - pos.z);
       if (d < nearestDist) { nearestDist = d; nearest = p.id; }

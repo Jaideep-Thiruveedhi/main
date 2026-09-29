@@ -1,6 +1,19 @@
 import React from 'react';
 import { useWorldStore, PLACES } from '../world/state/useWorldStore';
 import { t } from '../i18n';
+import { getWorldBlock } from '../world/engine/world';
+import { CHUNK_HEIGHT } from '../world/engine/chunks';
+
+function surfaceY(x: number, z: number): number {
+  for (let y = CHUNK_HEIGHT - 1; y >= 0; y--) {
+    const id = getWorldBlock(x, y, z);
+    if (id !== 0 && id !== 12 && id !== 13 && id !== 14 && id !== 15 &&
+        id !== 16 && id !== 17 && id !== 18 && id !== 19 && id !== 21 && id !== 24) {
+      return y + 1;
+    }
+  }
+  return 6;
+}
 
 // Mini compass / map listing all places for fast travel.
 
@@ -8,6 +21,7 @@ export const Compass: React.FC = () => {
   const language = useWorldStore((s) => s.language);
   const setCurrentPlace = useWorldStore((s) => s.setCurrentPlace);
   const setActivePanel = useWorldStore((s) => s.setActivePanel);
+  const setAutoWalkTarget = useWorldStore((s) => s.setAutoWalkTarget);
   const role = useWorldStore((s) => s.role);
   const playerPosition = useWorldStore((s) => s.playerPosition);
 
@@ -27,6 +41,11 @@ export const Compass: React.FC = () => {
               setCurrentPlace(place.id);
               const panelId = place.id === 'fieldWorker' ? 'worker' : place.id === 'districtPlanner' ? 'planner' : place.id;
               setActivePanel(panelId as any);
+              setAutoWalkTarget([
+                place.position[0],
+                surfaceY(place.position[0], place.position[2]),
+                place.position[2],
+              ]);
             }}
             className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-xs font-bold transition-colors ${
               locked ? 'text-white/40' : 'text-white hover:bg-white/10'

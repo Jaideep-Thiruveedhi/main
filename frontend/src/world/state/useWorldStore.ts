@@ -20,17 +20,19 @@ export interface PlaceInfo {
   staffOnly?: boolean;
 }
 
+// Marker positions must sit in OPEN GROUND beside each building, never inside
+// it, or fast-travel walks the player into a wall.
 export const PLACES: PlaceInfo[] = [
-  { id: 'home', position: [-18, 0, 10] },
-  { id: 'journey', position: [0, 0, 0] },
-  { id: 'training', position: [28, 0, -14] },
-  { id: 'jobs', position: [22, 0, 18] },
-  { id: 'careers', position: [-30, 0, -22] },
-  { id: 'aid', position: [-8, 0, 26] },
-  { id: 'community', position: [-2, 0, -18] },
-  { id: 'assistant', position: [-2, 0, -14] },
-  { id: 'fieldWorker', position: [12, 0, 8], staffOnly: true },
-  { id: 'districtPlanner', position: [16, 0, -34], staffOnly: true },
+  { id: 'home', position: [-18, 0, 16] },        // courtyard, south of the houses
+  { id: 'journey', position: [0, 0, 2] },         // open ground on the lantern road
+  { id: 'training', position: [28, 0, -4] },      // open apron south of the centres
+  { id: 'jobs', position: [22, 0, 24] },          // between the market stalls
+  { id: 'careers', position: [-30, 0, -18] },     // foot of the terraced hill
+  { id: 'aid', position: [-8, 0, 31] },           // in front of the bank
+  { id: 'community', position: [-2, 0, -11] },    // edge of the banyan chaupal
+  { id: 'assistant', position: [-8, 0, -11] },    // voice orb above the banyan
+  { id: 'fieldWorker', position: [17, 0, 8], staffOnly: true },   // beside the jeep
+  { id: 'districtPlanner', position: [16, 0, -28], staffOnly: true }, // base of the tower
 ];
 
 export function placePosition(id: PlaceId): [number, number, number] {

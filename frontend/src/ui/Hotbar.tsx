@@ -48,9 +48,14 @@ export const Hotbar: React.FC = () => {
                 setActivePanel('map');
                 return;
               }
-              // Tap = go there (auto-walk). The panel opens on arrival.
+              // Open the panel straight away (never leave the user staring at
+              // nothing) AND start walking there so they arrive in place.
               setCurrentPlace(placeId);
-              setActivePanel(null);
+              setActivePanel(
+                (placeId === 'fieldWorker' ? 'worker'
+                  : placeId === 'districtPlanner' ? 'planner'
+                  : placeId) as any
+              );
               setAutoWalkTarget([
                 place!.position[0],
                 surfaceY(place!.position[0], place!.position[2]),
