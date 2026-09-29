@@ -1,0 +1,103 @@
+{
+  "app": {
+    "title": "जीवन मित्र",
+    "tagline": "आपकी आजीविका साथी",
+    "loading": "गाँव तैयार हो रहा है...",
+    "loadingTip": "टिप: दाईं ओर नीचे माइक दबाकर बोलकर भी पूछ सकते हैं।",
+    "sampleData": "नमूना डेटा",
+    "offlineSample": "ऑफ़लाइन नमूना"
+  },
+  "places": {
+    "home": "घर",
+    "journey": "मेरी यात्रा",
+    "training": "कौशल प्रशिक्षण",
+    "jobs": "नौकरियाँ",
+    "careers": "करियर पथ",
+    "aid": "वित्तीय सहायता",
+    "community": "समुदाय",
+    "assistant": "मित्र",
+    "map": "नक्शा",
+    "fieldWorker": "क्षेत्र कर्मी",
+    "districtPlanner": "जिला योजना"
+  },
+  "hud": {
+    "interact": "छुएँ",
+    "pressE": "E दबाएँ",
+    "listen": "सुनें",
+    "backToVillage": "वापस गाँव",
+    "mic": "माइक",
+    "replay": "फिर सुनें",
+    "skip": "छोड़ें",
+    "dontKnow": "नहीं जानते",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "next": "आगे",
+    "close": "बंद करें",
+    "goThere": "वहाँ जाएँ",
+    "locked": "केवल कर्मचारियों के लिए",
+    "settings": "सेटिंग्स",
+    "quality": "गुणवत्ता",
+    "textSize": "टेक्स्ट आकार",
+    "reduceMotion": "गति कम करें",
+    "highContrast": "हाई कॉन्ट्रास्ट",
+    "captions": "उपशीर्षक",
+    "simpleMode": "सरल दृश्य",
+    "sound": "ध्वनि",
+    "language": "भाषा"
+  },
+  "journey": {
+    "title": "मेरी यात्रा",
+    "profileMade": "प्रोफ़ाइल बनी",
+    "referral": "रेफ़रल",
+    "enrolled": "नामांकन",
+    "trainingComplete": "प्रशिक्षण पूर्ण",
+    "job": "नौकरी / उद्यम"
+  },
+  "match": {
+    "interest": "योग्यता मेल",
+    "interestHint": "स्थानीय बैच की पुष्टि नहीं",
+    "verified": "सत्यापित",
+    "verifiedHint": "स्थानीय बैच की पुष्टि हो गई",
+    "apply": "आवेदन करें",
+    "distance": "दूरी",
+    "km": "किमी",
+    "seats": "सीटें",
+    "stipend": "छात्रवृत्ति"
+  },
+  "mitra": {
+    "greeting": "नमस्ते! मैं मित्र हूँ। चलिए गाँव घूमते हैं।",
+    "listening": "सुन रहा हूँ...",
+    "thinking": "सोच रहा हूँ...",
+    "speaking": "बोल रहा हूँ...",
+    "idle": "मैं यहाँ हूँ",
+    "verifiedNeeded": "यह अभी योग्यता मेल है। स्थानीय बैच की पुष्टि के बाद ही आवेदन हो सकता है।",
+    "verifiedDone": "बधाई! यह बैच अब सत्यापित है। आप आवेदन कर सकते हैं।",
+    "verifyFailed": "पुष्टि नहीं हो पाई। कृपया बाद में पुनः प्रयास करें।"
+  },
+  "worker": {
+    "title": "क्षेत्र कर्मी पोर्टल",
+    "login": "कर्मी लॉगिन",
+    "pin": "PIN दर्ज करें",
+    "verify": "पुष्टि करें",
+    "verifying": "पुष्टि हो रही है...",
+    "cases": "मामले",
+    "reviewProfile": "प्रोफ़ाइल समीक्षा"
+  },
+  "planner": {
+    "title": "जिला योजना",
+    "brief": "योजना सारांश",
+    "generateBrief": "सारांश बनाएँ",
+    "signOff": "हस्ताक्षर करें",
+    "export": "निर्यात",
+    "demand": "मांग",
+    "capacity": "क्षमता",
+    "gap": "अंतर",
+    "suppressed": "छिपा हुआ"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "qualityLow": "कम",
+    "qualityMedium": "मध्यम",
+    "qualityHigh": "उच्च"
+  }
+}

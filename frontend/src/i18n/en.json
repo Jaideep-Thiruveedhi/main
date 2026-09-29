@@ -1,0 +1,103 @@
+{
+  "app": {
+    "title": "JeevanMitra",
+    "tagline": "Your livelihood companion",
+    "loading": "Preparing the village...",
+    "loadingTip": "Tip: press the mic button bottom-right and just speak.",
+    "sampleData": "Sample data",
+    "offlineSample": "Offline sample"
+  },
+  "places": {
+    "home": "Home",
+    "journey": "My Journey",
+    "training": "Skill Training",
+    "jobs": "Jobs",
+    "careers": "Career Paths",
+    "aid": "Financial Aid",
+    "community": "Community",
+    "assistant": "Mitra",
+    "map": "Map",
+    "fieldWorker": "Field Worker",
+    "districtPlanner": "District Planner"
+  },
+  "hud": {
+    "interact": "Touch",
+    "pressE": "Press E",
+    "listen": "Listen",
+    "backToVillage": "Back to village",
+    "mic": "Mic",
+    "replay": "Replay",
+    "skip": "Skip",
+    "dontKnow": "Don't know",
+    "yes": "Yes",
+    "no": "No",
+    "next": "Next",
+    "close": "Close",
+    "goThere": "Go there",
+    "locked": "Staff only",
+    "settings": "Settings",
+    "quality": "Quality",
+    "textSize": "Text size",
+    "reduceMotion": "Reduce motion",
+    "highContrast": "High contrast",
+    "captions": "Captions",
+    "simpleMode": "Simple view",
+    "sound": "Sound",
+    "language": "Language"
+  },
+  "journey": {
+    "title": "My Journey",
+    "profileMade": "Profile made",
+    "referral": "Referral",
+    "enrolled": "Enrolled",
+    "trainingComplete": "Training complete",
+    "job": "Job / enterprise"
+  },
+  "match": {
+    "interest": "Interest Match",
+    "interestHint": "Local batch not yet verified",
+    "verified": "Verified",
+    "verifiedHint": "Local batch verified",
+    "apply": "Apply",
+    "distance": "Distance",
+    "km": "km",
+    "seats": "seats",
+    "stipend": "Stipend"
+  },
+  "mitra": {
+    "greeting": "Namaste! I am Mitra. Let us walk the village together.",
+    "listening": "Listening...",
+    "thinking": "Thinking...",
+    "speaking": "Speaking...",
+    "idle": "I am here",
+    "verifiedNeeded": "This is an Interest Match. Application opens only after the local batch is verified.",
+    "verifiedDone": "Congratulations! This batch is now verified. You can apply.",
+    "verifyFailed": "Verification failed. Please try again later."
+  },
+  "worker": {
+    "title": "Field Worker Portal",
+    "login": "Worker login",
+    "pin": "Enter PIN",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "cases": "Cases",
+    "reviewProfile": "Review profile"
+  },
+  "planner": {
+    "title": "District Planning",
+    "brief": "Planning brief",
+    "generateBrief": "Generate brief",
+    "signOff": "Sign off",
+    "export": "Export",
+    "demand": "Demand",
+    "capacity": "Capacity",
+    "gap": "Gap",
+    "suppressed": "Suppressed"
+  },
+  "settings": {
+    "title": "Settings",
+    "qualityLow": "Low",
+    "qualityMedium": "Medium",
+    "qualityHigh": "High"
+  }
+}
